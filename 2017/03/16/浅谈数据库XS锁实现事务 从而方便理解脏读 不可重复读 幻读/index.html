@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="数据库,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="无良" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读事务的最基本性质是ACID性质 关于这几个性质 我这里就不展开了这是事务要实现的基础 这里具体解释的话内容太多 我也可能水平不够 不能够完整明确的讲解出来 但是需要记住事务实现的几个性质是ACID分别是">
+<meta name="keywords" content="数据库">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读">
+<meta property="og:url" content="http://yoursite.com/2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/index.html">
+<meta property="og:site_name" content="无良">
+<meta property="og:description" content="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读事务的最基本性质是ACID性质 关于这几个性质 我这里就不展开了这是事务要实现的基础 这里具体解释的话内容太多 我也可能水平不够 不能够完整明确的讲解出来 但是需要记住事务实现的几个性质是ACID分别是">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0%E6%A8%A1%E6%8B%9F.jpg?raw=true">
+<meta property="og:image" content="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E8%84%8F%E8%AF%BB%E6%A8%A1%E6%8B%9F.png?raw=true">
+<meta property="og:image" content="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E8%84%8F%E8%AF%BB%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0.png?raw=true">
+<meta property="og:image" content="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB.png?raw=true">
+<meta property="og:updated_time" content="2019-12-01T10:55:12.006Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读">
+<meta name="twitter:description" content="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读事务的最基本性质是ACID性质 关于这几个性质 我这里就不展开了这是事务要实现的基础 这里具体解释的话内容太多 我也可能水平不够 不能够完整明确的讲解出来 但是需要记住事务实现的几个性质是ACID分别是">
+<meta name="twitter:image" content="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0%E6%A8%A1%E6%8B%9F.jpg?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/">
+
+
+
+
+
+  <title>浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读 | 无良</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">无良</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="三山">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="http://oopjava.cn/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="无良">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-16T00:00:00+08:00">
+                2017-03-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="浅谈数据库XS锁实现事务-从而方便理解脏读-不可重复读-幻读"><a href="#浅谈数据库XS锁实现事务-从而方便理解脏读-不可重复读-幻读" class="headerlink" title="浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读"></a>浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读</h1><p>事务的最基本性质是ACID性质 关于这几个性质 我这里就不展开了<br>这是事务要实现的基础 这里具体解释的话内容太多 我也可能水平不够 不能够完整明确的讲解出来 但是需要记住事务实现的几个性质是ACID<br>分别是<br><a id="more"></a></p>
+<ul>
+<li>Atomicity 原子性</li>
+<li>Consistency 一致性</li>
+<li>Isolation 隔离性</li>
+<li>Durability 持久性</li>
+</ul>
+<p>接下来直入主题 关于事务呢 就是实现并发下的不同客户的操作 也就是数据库的并发控制<br>并发会带来一些问题 在我个人的本科教科书上 是比常规的来说要多一个问题 这个问题在具体开发的时候并没有什么意义 这个属于最基本的保障 哪怕是最基本的数据库事务隔离级别也会实现它 这就是丢失更新问题 下面再详述 其他的三个就是属于本文上的 脏读 不可重复读 幻读<br>我们来一一说明下面为什么发生 具体在什么时候 什么原因下</p>
+<blockquote>
+<p>下面的Find 就是为读数据 UPD就是更新数据 XFIND暂时理解为Find Rollback回滚 Commit提交</p>
+</blockquote>
+<h3 id="丢失更新问题"><a href="#丢失更新问题" class="headerlink" title="丢失更新问题"></a>丢失更新问题</h3><p>在7时间 丢失了事务T1的更新</p>
+<p><a href="https://github.com/SanShanYouJiu/ImageRepository/blob/master/数据库事务/丢失更新模拟.jpg?raw=true" target="_blank" rel="noopener"><img src="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0%E6%A8%A1%E6%8B%9F.jpg?raw=true" alt="img"></a></p>
+<h3 id="读脏数据"><a href="#读脏数据" class="headerlink" title="读脏数据"></a>读脏数据</h3><p>读到了尚未提交的数据<br>一个是读了脏数据 但是没有破坏数据库完整性<br><a href="https://github.com/SanShanYouJiu/ImageRepository/blob/master/数据库事务/脏读模拟.png?raw=true" target="_blank" rel="noopener"><img src="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E8%84%8F%E8%AF%BB%E6%A8%A1%E6%8B%9F.png?raw=true" alt="img"></a><br>另外一个就是读了脏数据 引起了数据丢失 破坏了数据库完整性<br><a href="https://github.com/SanShanYouJiu/ImageRepository/blob/master/数据库事务/脏读丢失更新.png?raw=true" target="_blank" rel="noopener"><img src="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E8%84%8F%E8%AF%BB%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0.png?raw=true" alt="img"></a></p>
+<h3 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h3><p>表示为T1需要俩次读取同一数据项 但是在俩次操作的间隔中 另一个事务T2改变了A的值<br><a href="https://github.com/SanShanYouJiu/ImageRepository/blob/master/数据库事务/不可重复读.png?raw=true" target="_blank" rel="noopener"><img src="https://github.com/SanShanYouJiu/ImageRepository/blob/master/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB.png?raw=true" alt="img"></a></p>
+<h3 id="关于幻读"><a href="#关于幻读" class="headerlink" title="关于幻读"></a>关于幻读</h3><p>幻读的情况我暂且口述</p>
+<blockquote>
+<p>以后有机会再重新画个图</p>
+</blockquote>
+<p>这是在一个整体上的错误读写 事务T2读取到了这个表中有20行数据 并且针对这整个20行进行了修改数据<br>事务T1在这个过程中插入或删除行等方式来修改了这个表的20行数据<br>假设为插入 使其变为了21行<br>那么以后操作T2这个用户发现这个表中还有没有被影响到的行 就像产生了幻觉一样</p>
+<hr>
+<p>这些问题都需要并发控制子系统来实现<br>那么就要说到本文的主题XS锁了<br><strong>排他性封锁（X锁）写锁</strong></p>
+<blockquote>
+<p>定义为 如果事务T对某个数据R（可以是数据项 记录 数据集 乃至于整个数据库）实现了X锁 那么在T对数据R解除封锁之前 不允许其他事务T再对该数据加任何类型的锁 这个数据加了X锁之后只能被该事务进行读写</p>
+</blockquote>
+<ul>
+<li>申请X锁的操作为XFIND R 表示事物对数据R申请加X锁 若成功 则可以读写数据R 若不成功，那么这个事务就会进入等待队列 一直到获准X锁 事务才能继续做下去</li>
+<li>解除操作为 XRELEASE R 表示事务要解除对数据R的X锁<br>如果过早的解锁 有可能其他事务读了未提交数据（且随后被撤回） 引起丢失其他事务的更新 x锁的接触操作应该合并到事务的结束（ROLLBACK和COMMIT语句中包含了解除X锁的操作）</li>
+</ul>
+<p><strong>共享型封锁(S锁) 读锁</strong><br>因为加X锁的只能被一个事务进行读写 所以为了并发的读 加入了S锁</p>
+<blockquote>
+<p>定义为 如果事务T对数据加上S锁后 仍需要其他事务再对该数据加S锁<br>但在该数据的所有S锁都解除之前决不允许任何事务对该数据加X锁</p>
+</blockquote>
+<p>使用S锁的操作有三个</p>
+<ul>
+<li>申请S锁 SFIND R 表示事务对数据R申请加S锁<br>若成功则可以读数据R 但不可以写数据R</li>
+<li>升级和写操作 UPDX R 表示事务要吧数据R的S锁升级为X锁 若成功则更新数据R 否则这个事务进入等待队列</li>
+<li>解除S锁操作 SRELEASE R</li>
+</ul>
+<p>那我们就到了关键的部分了</p>
+<blockquote>
+<p>这里提及一下关于封锁的粒度注意问题 封锁对象越大 并发度就越小 开销也就越小 相反的粒度越小 开销就大</p>
+</blockquote>
+<p>在并发系统中是利用一个封锁协议来操作XS锁进行并发子系统控制的<br>这个封锁协议如下</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">级别</th>
+<th style="text-align:left">内 容</th>
+<th style="text-align:left">内容</th>
+<th style="text-align:left">内容</th>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">一级封锁协议</td>
+<td style="text-align:left">事务在修改数据之前，必须先对该数据加X锁直到事务结束时才释放</td>
+<td style="text-align:left">但只读数据可以不加锁</td>
+<td style="text-align:left">但只读数据可以不加锁</td>
+<td style="text-align:left">防止丢失修改</td>
+<td style="text-align:left">不加锁的数据 可能“读脏数据” 也可能“不可重复读”</td>
+</tr>
+<tr>
+<td style="text-align:left">二级封锁协议</td>
+<td style="text-align:left">同上</td>
+<td style="text-align:left">但其他事务在读数据之前必须先加S锁</td>
+<td style="text-align:left">读完数据后即可释放S锁</td>
+<td style="text-align:left">防止“丢失修改” 防止“脏数据”</td>
+<td style="text-align:left">对加S锁的事务 可能“不可重复读”</td>
+</tr>
+<tr>
+<td style="text-align:left">三级封锁协议</td>
+<td style="text-align:left">同上</td>
+<td style="text-align:left">同上</td>
+<td style="text-align:left">直到事务结束时才释放S锁</td>
+<td style="text-align:left">防止“丢失修改”防止“读脏数据” 防止“不可重复读”</td>
+<td style="text-align:left">无</td>
+</tr>
+</tbody>
+</table>
+<h3 id="那我们还是可能出现幻读-那幻读怎么实现避免的呢"><a href="#那我们还是可能出现幻读-那幻读怎么实现避免的呢" class="headerlink" title="那我们还是可能出现幻读 那幻读怎么实现避免的呢"></a>那我们还是可能出现幻读 那幻读怎么实现避免的呢</h3><p>这就是SERIALIZABLE 中文翻译过来叫串行化 这是多个事务依次执行的效果 如果利用分时的方法 同时处理多个事务 则称为事务的并行</p>
+<h3 id="可串行化概念"><a href="#可串行化概念" class="headerlink" title="可串行化概念"></a>可串行化概念</h3><blockquote>
+<p>每个事务中 语句的先后顺序在各种调度中始终保持一致 在这个前提下 如果一个并发调度的执行结果和某一串行调度的结果等价 那么 这个调度就被称为“可串行化的调度” 否则就是不可串行化的调度</p>
+</blockquote>
+<p>在这种情况下 我们可以保证每个事务的结果都是正确的 也自然防止了幻读</p>
+<p>最后</p>
+<h2 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h2><p>SQL提供事务的四种隔离级别让用户选择 这四个级别从高到低如下所述</p>
+<ul>
+<li>SERIALIZABLE(可串行化）: 允许事务与其他事务并发执行 但系统必须保证并发调度是可串行化的 不致发生错误</li>
+<li>REPEATABLE READ（可重复读）: 只允许事务读已提交的数据 并且在俩次读同一数据时不允许其他事务修改此数据</li>
+<li>READ COMMITTED（读提交数据）:允许事务读已提交的数据 但不要求“可重复读” 例如 事务对同一记录的俩次读取之间 记录可能已被提交的事务更新</li>
+<li>READ UNCOMMITTED（可以读未提交数据）：允许事务读已提交或未提交的数据 这是数据库允许的最低级别</li>
+</ul>
+<blockquote>
+<h2 id="参考于本科教材"><a href="#参考于本科教材" class="headerlink" title="参考于本科教材"></a>参考于本科教材</h2></blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/数据库/" rel="tag"># 数据库</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/24/JAVA核心技术第14章--线程章/" rel="prev" title="JAVA核心技术第14章--线程章">
+                JAVA核心技术第14章--线程章 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="http://oopjava.cn/images/avatar.png" alt="三山">
+            
+              <p class="site-author-name" itemprop="name">三山</p>
+              <p class="site-description motion-element" itemprop="description">空山无明</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/SanShanYouJiu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#浅谈数据库XS锁实现事务-从而方便理解脏读-不可重复读-幻读"><span class="nav-number">1.</span> <span class="nav-text">浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#丢失更新问题"><span class="nav-number">1.0.1.</span> <span class="nav-text">丢失更新问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读脏数据"><span class="nav-number">1.0.2.</span> <span class="nav-text">读脏数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不可重复读"><span class="nav-number">1.0.3.</span> <span class="nav-text">不可重复读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于幻读"><span class="nav-number">1.0.4.</span> <span class="nav-text">关于幻读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#那我们还是可能出现幻读-那幻读怎么实现避免的呢"><span class="nav-number">1.0.5.</span> <span class="nav-text">那我们还是可能出现幻读 那幻读怎么实现避免的呢</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可串行化概念"><span class="nav-number">1.0.6.</span> <span class="nav-text">可串行化概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事务的隔离级别"><span class="nav-number">1.1.</span> <span class="nav-text">事务的隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考于本科教材"><span class="nav-number">1.2.</span> <span class="nav-text">参考于本科教材</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">三山</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+ <div class="powered-by">  
+  </div>
+  <span>Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a></span>
+</div>
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </footer></div>
+    
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://sanshanyoujiu.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/';
+          this.page.identifier = '2017/03/16/浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读/';
+          this.page.title = '浅谈数据库XS锁实现事务 从而方便理解脏读 不可重复读 幻读';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://sanshanyoujiu.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

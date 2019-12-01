@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVA,基础,JVM&&GC,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="无良" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="了解Java GC （译） 最近在了解Java Gc相关内容 看到一篇不错的入门文章 原文Understanding Java Garbage Collection本文是“成为一个Java GC专家”系列的第一篇">
+<meta name="keywords" content="JAVA,基础,JVM&amp;&amp;GC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="成为Java GC专家 第一篇（译）">
+<meta property="og:url" content="http://yoursite.com/2017/10/31/成为Java GC专家 第一篇（译）/index.html">
+<meta property="og:site_name" content="无良">
+<meta property="og:description" content="了解Java GC （译） 最近在了解Java Gc相关内容 看到一篇不错的入门文章 原文Understanding Java Garbage Collection本文是“成为一个Java GC专家”系列的第一篇">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/e987ed3f4fbd454cef88e531f4aa18f4.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/99b983892094b5c6d2fc3736e15da7d1.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/71ca8e88fb8329169399fc9b1cbd16fb.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/38b852430ae0d66651468fc11520627b.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/10ce40d924aebd3fc7a050dc7bcdba19.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/e295a0637c82f92c23d5cca6e0599300.png">
+<meta property="og:updated_time" content="2019-12-01T10:54:42.202Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="成为Java GC专家 第一篇（译）">
+<meta name="twitter:description" content="了解Java GC （译） 最近在了解Java Gc相关内容 看到一篇不错的入门文章 原文Understanding Java Garbage Collection本文是“成为一个Java GC专家”系列的第一篇">
+<meta name="twitter:image" content="https://www.cubrid.org/files/attach/images/1744/745/001/e987ed3f4fbd454cef88e531f4aa18f4.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/10/31/成为Java GC专家 第一篇（译）/">
+
+
+
+
+
+  <title>成为Java GC专家 第一篇（译） | 无良</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">无良</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/10/31/成为Java GC专家 第一篇（译）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="三山">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="http://oopjava.cn/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="无良">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">成为Java GC专家 第一篇（译）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-31T00:00:00+08:00">
+                2017-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/10/31/成为Java GC专家 第一篇（译）/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/10/31/成为Java GC专家 第一篇（译）/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="了解Java-GC-（译）"><a href="#了解Java-GC-（译）" class="headerlink" title="了解Java GC （译）"></a>了解Java GC （译）</h1><blockquote>
+<p>最近在了解Java Gc相关内容 看到一篇不错的入门文章 原文<a href="https://www.cubrid.org/blog/understanding-java-garbage-collection" target="_blank" rel="noopener">Understanding Java Garbage Collection</a><br>本文是“成为一个Java GC专家”系列的第一篇<br><a id="more"></a><br>想知道Java中GC的好处吗？<br>满足一个软件知识分子的好奇心是一个很好的原因 但是不仅如此 明白GC是如何工作的可以帮助您写出更好的Java程序</p>
+</blockquote>
+<p>这里的仅仅只是我个人的主观的想法 但是我觉得 一个精通GC的人往往是一个更好的Java程序员 如果您对GC的过程感兴趣 代表着您有开发某种规模应用程序的经验 如果您仔细考虑了如何选择正确的GC算法 这意味着你完全了解你开发的应用程序的功能 当然 这个条件不能适合所有好的开发者<br>但是 当我说懂GC是一个好的Java开发者的必要条件时 很少有人反对</p>
+<p>这是“成为一个Java GC专家”系列的第一篇 这里我将介绍GC的大概内容 在下一篇 我讨论来自NHN的例子中的分析GC的状态与调优</p>
+<p>有一个术语 需要在正式学习GC之前了解 这个就是“<strong>stop-the-world</strong>” 无论选择什么GC算法都会发生stop-the-world ，Stop-the-world 意味着JVM在执行GC时停止应用 当stop-the-world发生时 所有的线程除了GC的相关线程都将停止工作 当GC完成时 中断的任务会继续工作 GC的优化其实就是减少stop-the-world的时间</p>
+<h2 id="分代GC收集"><a href="#分代GC收集" class="headerlink" title="分代GC收集"></a>分代GC收集</h2><p>Java中没有明确指定删除内存的程序代码 一些人使用设置相关对象为null 或者使用System.Gc()方法来明确删除内存 设置为null倒是并无太大所谓 但是使用System.Gc()方法将会大幅影响系统的性能，是不能这样做的（非常感动的是，我并没有在NHN中发现有开发者使用这种代码）</p>
+<p>在Java中 开发者们不能在代码中显示的删除内存，是GC发现不必要（垃圾）的对象并且移出它们在内存的空间，GC是基于以下俩个假说创建的（应该叫推测或者先决条件更准确些 而不是假说）</p>
+<ul>
+<li><p>大多数对象很快的就会无法访问的</p>
+</li>
+<li><p>从老年代到年轻代的引用存在很少</p>
+<p>这个假说被称为<strong>weak generational hypothesis</strong>（不知如何翻译） 所以为了保持这个假说的优势 在HotSpot VM中物理上的分为了俩个 <strong>年轻代</strong>与<strong>老年代</strong></p>
+</li>
+</ul>
+<p><strong>年轻代</strong>：大多数新创建的线程都在这里 由于大多数创建的对象很快就变的无法访问 许多对象都是在年轻代中创建的 然后消失 当对象从这个区域消失时 我们就可以说“<strong>minor GC</strong>”发生了</p>
+<p><strong>老年代</strong>：对象们无法变成无法访问并且存活的从年轻代中复制到这里 它通常比年轻代要大 而且随着大小的增加 年轻大的GC的发生也越来越不频繁 当这些对象在老年代中消失 ，我们就说它是“<strong>major GC”或者是（“Full GC”）</strong>发生了</p>
+<p>让我们看看下面的图<br><a href="https://www.cubrid.org/files/attach/images/1744/745/001/e987ed3f4fbd454cef88e531f4aa18f4.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/e987ed3f4fbd454cef88e531f4aa18f4.png" alt="此处输入图片的描述"></a><br>图 1: GC 区域&amp;数据流<br><strong>常驻代</strong>在图表中被称为“<strong>method area</strong>” 它存储类或者内部的字符串 所以 这些对象绝对不是从老年代中存活下来到这里永久保存的 GC可能会发生在这里 这个地方发生GC也被视为Major GC</p>
+<p>有人可能会想</p>
+<blockquote>
+<p><strong>如果一个老年代的对象需要引用一个年轻代的对象怎么办</strong></p>
+</blockquote>
+<p>在这种情况下 在老年代中有一个名为“<strong>card table</strong>”的东西的 这是一个512字节的块 如果有老年代对象引用年轻代对象 就会在这个表中记录 如果在年轻代发生GC 仅搜索card table来决定这次GC的内容 而不是去查找老年代中所有对象的引用 这个Card table是通过<strong>写屏障</strong>进行管理 这种写屏障是可以让minor GC的性能更好 虽然有一些消耗 但是总体GC的时间变少了<br><a href="https://www.cubrid.org/files/attach/images/1744/745/001/99b983892094b5c6d2fc3736e15da7d1.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/99b983892094b5c6d2fc3736e15da7d1.png" alt="此处输入图片的描述"></a><br>图 2: Card Table 结构</p>
+<h2 id="年轻代中的组成"><a href="#年轻代中的组成" class="headerlink" title="年轻代中的组成"></a>年轻代中的组成</h2><p>要了解GC，我们了解一下年轻代的，这些对象都是第一次创建的对象 ， 年轻代分为三个部分</p>
+<ul>
+<li>一个<strong>Eden</strong>区</li>
+<li>俩个<strong>Survivor</strong> 区</li>
+</ul>
+<p>总共有3个区域，其中俩个是Survivor区 每个空间的执行顺序如下：</p>
+<ol>
+<li>大多数新创建的对象都在Eden区</li>
+<li>在Eden区的一次GC后 存活的对象会将移动到Survivor区</li>
+<li>在Eden区Gc后，这些对象会堆积到Survivor区 并且其他幸存的对象也在这里</li>
+<li>当Survivor区满了之后继续存活的对象会到另外一个Survivor区，然后，已满的Surivor的空间将会改变为没有数据的状态</li>
+</ol>
+<p>5.在这些步骤中幸存的对象已经重复了很多次 会将移动到老年代中</p>
+<p>检查这些步骤可以发现 其中一个Survivor区必须保持为空 如果数据存在于俩个Survivor空间中 或者俩个空间都没有使用 这说明<strong>系统出现了一些错误</strong></p>
+<p>数据通过minor GC处理堆积到老年代的过程如下图所示：<br><a href="https://www.cubrid.org/files/attach/images/1744/745/001/71ca8e88fb8329169399fc9b1cbd16fb.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/71ca8e88fb8329169399fc9b1cbd16fb.png" alt="此处输入图片的描述"></a><br>图 3: GC之前和GC之后</p>
+<p>注意在 HotSpot VM中 有俩种技术来用于更好的内存分配 一种是“<strong>bump-the-pointer</strong>”另外一种是“<strong>TLABs(Thread-Local Allocation Buffers”</strong></p>
+<p><strong>bump-the-pointer</strong>技术是跟踪分配给Eden的最后一个对象 这个对象将位于Eden的顶部 而且之后创建一个对象 它只会检查对象的大小是否适合Eden空间 如果是可以的话 它会将被放到Eden空间中 并且新对象会放到Eden中的顶部 因此 当创建新的对象时 只需要检查最后添加的对象 这样可以更快的进行对象的内存分配 但是 如果考虑在多线程的环境中就会有不同的情况 以线程安全的多线程方式保存对象到Eden空间中 将不可避免的发生锁定 并且性能将会因为锁定争用导致性能下降 在HotSpot VM中 <strong>TLABs</strong>是这种问题的解决方案 它允许不同的线程有自己共享的Eden空间中对应的一小部分 因为每个线程只能访问自己的TLAB 所以即是指针技术也允许没有锁定的内存分配</p>
+<p>快速过了一下年轻代内存的概述 你没有必要一定记住上面俩个技术 你不会不知道他们 但是请你记住 首先创建的对象是在Eden空间中 而且 长时间存活的对象将会从Survivor区移动到老年代</p>
+<h2 id="老年代的GC"><a href="#老年代的GC" class="headerlink" title="老年代的GC"></a>老年代的GC</h2><p>老年代中的数据一满的时候就会执行GC， 执行程序与GC的类型而变化，所以 如果你了解了更多不同的GC类型会更好的了解这个过程</p>
+<ol>
+<li>Serial GC</li>
+<li>Parallel GC</li>
+<li>Parallel Old GC (Parallel Compacting GC)</li>
+<li>Concurrent Mark &amp; Sweep GC (or “CMS”)</li>
+<li>Garbage First (G1) GC</li>
+</ol>
+<p>在这种中 <strong>serial GC是无法在服务器中操作使用的</strong> 当桌面电脑只有一个核心的cpu时就会使用这个GC类型 使用Serial GC会显著降低应用程序的性能</p>
+<p>现在 让我们来看不同的GC类型</p>
+<h3 id="Serial-GC-XX-UseSerialGC"><a href="#Serial-GC-XX-UseSerialGC" class="headerlink" title="Serial GC (-XX:+UseSerialGC)"></a>Serial GC (-XX:+UseSerialGC)</h3><p>年轻代的GC使用在前一段中有相关介绍 这个GC在老年代中使用的算法是“<strong>标记-清扫-紧凑</strong>”</p>
+<ol>
+<li>该算法第一步是标记老年代中的存活对象</li>
+<li>然后 它去前面检测堆然后只留下幸存的对象（清扫）</li>
+<li>在最后一步，它在前面的堆填充对象 使对象可以连续堆积在一起 并将堆分为俩个部分：一个有对象 一个没有对象（紧凑）</li>
+</ol>
+<p>这个Serial GC适合于小内存和Cpu核心数少的情况下</p>
+<h3 id="Parallel-GC-XX-UseParallelGC"><a href="#Parallel-GC-XX-UseParallelGC" class="headerlink" title="Parallel GC (-XX:+UseParallelGC)"></a>Parallel GC (-XX:+UseParallelGC)</h3><p><a href="https://www.cubrid.org/files/attach/images/1744/745/001/38b852430ae0d66651468fc11520627b.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/38b852430ae0d66651468fc11520627b.png" alt="此处输入图片的描述"></a><br>图 4: Serial GC 和 Parallel GC的不同之处<br>在图片中 你可以很清晰的看出Serial 与Parallel的区别 Serial GC只使用一个线程来处理GC ，Parrllel是使用多个线程来处理GC 因此更快 这个GC需要充足的内存与很多的CPU核心 所以又被称为“<strong>throughput GC.</strong>”</p>
+<h3 id="Parallel-Old-GC-XX-UseParallelOldGC"><a href="#Parallel-Old-GC-XX-UseParallelOldGC" class="headerlink" title="Parallel Old GC(-XX:+UseParallelOldGC)"></a>Parallel Old GC(-XX:+UseParallelOldGC)</h3><p>Parallel Old GC是自Jdk5中更新出现的 相比Parallel GC 唯一的区别就是Old GC的GC算法 它有三个步骤 ：标记-总结-压实 总结步骤会单独对之前通过GC操作幸存下来的对象进行分区 从而不同于其他标记-扫描-压实的扫描步骤 它要更复杂一点</p>
+<h3 id="CMS-GC-XX-UseConcMarkSweepGC"><a href="#CMS-GC-XX-UseConcMarkSweepGC" class="headerlink" title="CMS GC (-XX:+UseConcMarkSweepGC)"></a>CMS GC (-XX:+UseConcMarkSweepGC)</h3><p><a href="https://www.cubrid.org/files/attach/images/1744/745/001/10ce40d924aebd3fc7a050dc7bcdba19.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/10ce40d924aebd3fc7a050dc7bcdba19.png" alt="此处输入图片的描述"></a><br>图 5: Serial GC &amp; CMS GC</p>
+<p>从图中可以看出 这个并发 标记-清扫 GC是比我解释的其他GC类型要复杂的多<br>早期的初始化标记很简单 它搜索离类加载器中最近的对象的幸存对象 所以，它的暂停时间会非常的短 在并发标记步骤中，跟踪并检查刚刚确认幸存的对象的相关引用对象 这一步与其他类型的区别在于其他的线程与此同时也会进行处理 。在重新标记步骤中， 检查在并行标记步骤过程中引用的新添加或者停止的对象 最后，在并行清扫过程中 ，垃圾回收发生。垃圾回收器是在其他线程依然工作时进行的 由于GC是因为这种方式进行的 所以GC停止的时间非常的短 这个CMS GC也被称为低延时GC，它常常被用对延时有着至关重要的需要的应用中</p>
+<p>虽然这种GC类型有着stop-the-world时间很少的优点 但是也有以下的缺点</p>
+<ul>
+<li>它比其他GC类型使用更多的CPU和内存</li>
+<li>默认情况下不提供压缩操作</li>
+</ul>
+<p>你需要仔细检查来使用这种类型，另外 如果因为内存碎片太多需要执行压缩 ，那么stop-the-world的时间比其他任何GC类型都要长 你需要检查压缩任务的时间与发生频率</p>
+<h3 id="G1-GC"><a href="#G1-GC" class="headerlink" title="G1 GC"></a>G1 GC</h3><p>最后，让我们来看G1 GC<br><a href="https://www.cubrid.org/files/attach/images/1744/745/001/e295a0637c82f92c23d5cca6e0599300.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1744/745/001/e295a0637c82f92c23d5cca6e0599300.png" alt="此处输入图片的描述"></a><br>图 6: G1 GC布局.</p>
+<p>如果你想要了解G1 GC，请忘记所有有关年轻代与老年代的内容<br>如图所示， 将一个对象分配到一个网格中 然后执行一个GC，然后，当一个区域已满，这些对象分配到另外一个区域，然后执行GC<br>在这个GC类型中，无法找到数据从年轻代的三个空间移动到老年代的步骤（ The steps where the data moves from the three spaces of the young generation to the old generation cannot be found in this GC type. ？？）。这种类型是为了取代CMS GC，长期以来CMS GC引来了很多问题和投诉</p>
+<p>G1 GC的最大优点是性能，它比我们讨论过的所有GC类型速度都要快，但是它在JDK6中，它被称为早期访问，只是用来测试，正式出现则是在JDK7中。在我个人看来，我们需要一个很长的测试（至少一年），NHN才能在实际服务中使用JDK7， 所以说你需要等一等，另外，在JDK6中我听说过几次JVM崩溃的情况 所以说请等待更加稳定的时候再用</p>
+<p>在下一个问题中 我们将谈论GC调优，但是我想在此之前问一些事情，如果在应用中创建的所有对象大小和类型相同，我们公司使用的所有WAS选项都可以使用，但是因为WAS创建的对象大小和寿命因服务而异，随之设备种类也随之变化，换种说法，在某些服务中使用GC选项“A”，并不代表同样的选项对其他服务也会有一样好的效果，所以有必要通过不断的调整监控，为每个设备和每个选项都提供WAS实例，找到每个WAS线程的最佳值。这不是我的个人意见，这是来自JavaOne 2010 Oracle VM组工程师们的讨论</p>
+<p>在本文的问题上，我们只大概的看了一下Java的GC，在下一个问题中，我将介绍如何<strong>监控Java GC状态并且如何调整GC</strong></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          
+            <a href="/tags/基础/" rel="tag"># 基础</a>
+          
+            <a href="/tags/JVM-GC/" rel="tag"># JVM&&GC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/09/Java高并发程序设计读书笔记/" rel="next" title="Java高并发程序设计读书笔记">
+                <i class="fa fa-chevron-left"></i> Java高并发程序设计读书笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/04/成为Java GC专家 第二篇（译）/" rel="prev" title="成为Java GC专家 第二篇（译）">
+                成为Java GC专家 第二篇（译） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="http://oopjava.cn/images/avatar.png" alt="三山">
+            
+              <p class="site-author-name" itemprop="name">三山</p>
+              <p class="site-description motion-element" itemprop="description">空山无明</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/SanShanYouJiu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#了解Java-GC-（译）"><span class="nav-number">1.</span> <span class="nav-text">了解Java GC （译）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#分代GC收集"><span class="nav-number">1.1.</span> <span class="nav-text">分代GC收集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#年轻代中的组成"><span class="nav-number">1.2.</span> <span class="nav-text">年轻代中的组成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#老年代的GC"><span class="nav-number">1.3.</span> <span class="nav-text">老年代的GC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Serial-GC-XX-UseSerialGC"><span class="nav-number">1.3.1.</span> <span class="nav-text">Serial GC (-XX:+UseSerialGC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Parallel-GC-XX-UseParallelGC"><span class="nav-number">1.3.2.</span> <span class="nav-text">Parallel GC (-XX:+UseParallelGC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Parallel-Old-GC-XX-UseParallelOldGC"><span class="nav-number">1.3.3.</span> <span class="nav-text">Parallel Old GC(-XX:+UseParallelOldGC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CMS-GC-XX-UseConcMarkSweepGC"><span class="nav-number">1.3.4.</span> <span class="nav-text">CMS GC (-XX:+UseConcMarkSweepGC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#G1-GC"><span class="nav-number">1.3.5.</span> <span class="nav-text">G1 GC</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">三山</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+ <div class="powered-by">  
+  </div>
+  <span>Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a></span>
+</div>
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </footer></div>
+    
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://sanshanyoujiu.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/10/31/成为Java GC专家 第一篇（译）/';
+          this.page.identifier = '2017/10/31/成为Java GC专家 第一篇（译）/';
+          this.page.title = '成为Java GC专家 第一篇（译）';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://sanshanyoujiu.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

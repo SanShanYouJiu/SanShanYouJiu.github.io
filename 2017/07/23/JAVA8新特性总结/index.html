@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVA,基础,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="无良" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="参考 Java核心技术第十版 Java编程思想还有网上的各位大大的博客在尾部会一一列出">
+<meta name="keywords" content="JAVA,基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA8新特性总结">
+<meta property="og:url" content="http://yoursite.com/2017/07/23/JAVA8新特性总结/index.html">
+<meta property="og:site_name" content="无良">
+<meta property="og:description" content="参考 Java核心技术第十版 Java编程思想还有网上的各位大大的博客在尾部会一一列出">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-12-01T10:54:20.843Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JAVA8新特性总结">
+<meta name="twitter:description" content="参考 Java核心技术第十版 Java编程思想还有网上的各位大大的博客在尾部会一一列出">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/07/23/JAVA8新特性总结/">
+
+
+
+
+
+  <title>JAVA8新特性总结 | 无良</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">无良</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/23/JAVA8新特性总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="三山">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="http://oopjava.cn/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="无良">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">JAVA8新特性总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-23T00:00:00+08:00">
+                2017-07-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/07/23/JAVA8新特性总结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/07/23/JAVA8新特性总结/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>参考 Java核心技术第十版 Java编程思想<br>还有网上的各位大大的博客<br>在尾部会一一列出</p>
+</blockquote>
+<a id="more"></a>
+<h1 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h1><h2 id="接口与静态方法"><a href="#接口与静态方法" class="headerlink" title="接口与静态方法"></a>接口与静态方法</h2><p>在JAVASE8中 允许在接口中增加静态方法 理论 没有任何理由认为这是不合法的 只是这有违于将接口作为抽象规范的初衷</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public interface TestStaticInterace &#123;</span><br><span class="line">static  void ceshi(String s)&#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="这里插点自己的一些想法"><a href="#这里插点自己的一些想法" class="headerlink" title="这里插点自己的一些想法"></a>这里插点自己的一些想法</h2><p>关于接口与静态方法<br>在JAVASE8之前的版本中 接口是用来定义规范的 接口中的方法默认都是public abstract前缀的 是不能进 static修饰<br>在抽象类中 同样的 abstract修饰的方法也是不能进行static（SE8中也不能）<br>在编程思想中有这么两句话描述</p>
+<blockquote>
+<p>The interface keyword produces a completely abstract class, one that provides no implementation at all. It allows the creator to determine method names, argument lists, and return types, but no method bodies. An interface provides only a form, but no implementation</p>
+</blockquote>
+<hr>
+<blockquote>
+<p>When you say something is static, it means that particular field or method is not tied to any particular object instance of that class</p>
+</blockquote>
+<p>总体的意思就是</p>
+<ol>
+<li>接口是完全抽象的 只是用来定义规范的 就是没有方法体 要让实现类去实现</li>
+<li>一个静态的什么东西 方法或者字段之类 它是不能绑定到某个特定的实例对象上去的</li>
+</ol>
+<p>这个意思就很明显了 在接口中定义了这个static 要去某个特定类实现 但是这个静态方法是不能绑定到某个特定的实例对象上的 这就是自相矛盾了 也是之前没有在接口中加入static修饰的原因之一吧</p>
+<p>至于为什么现在加入了 更多我的觉得是一个API简洁与维护 扩展（默认方法同） 而不用到一个特定的实现类中</p>
+<p>比如以下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void ceshi(String s);//实现于某特定对象实例</span><br><span class="line"></span><br><span class="line">static  void ceshi2(String s)&#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;//接口中新定义的static 新的cehis方法</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果放到类中的话 事实上给人的感觉却是此API的用户并不是面向这个接口进行编程，而是面向这个接口的实现类在编程</p>
+</blockquote>
+<p>这样子在一些代码中维护起来就会方便很多<br>另外的话单独直接在接口中定义的话也会使用起来方便很多<br>也保持了API的简洁 最重要还是方便 这个具体用处还是自己体会比较好</p>
+<h2 id="接口与默认方法"><a href="#接口与默认方法" class="headerlink" title="接口与默认方法"></a>接口与默认方法</h2><p>注意 默认方法不是静态方法 静态方法我们直接点击接口名之后就能点击出来 但是默认方法不是这样 是在实现类中进行引用的<br>下面是例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> interface  iTest&#123;</span><br><span class="line">    int size();</span><br><span class="line">    default boolean isEmpty()&#123;</span><br><span class="line">        return size() == 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static class Testimpl implements iTest&#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int size() &#123;</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">    Testimpl test=  new Testimpl();</span><br><span class="line">    test.isEmpty();//在这里进行使用</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于其意义何在<br>引用俩段话</p>
+<blockquote>
+<p>在 java 8 之前，接口与其实现类之间的 耦合度 太高了（tightly coupled），当需要为一个接口添加方法时，所有的实现类都必须随之修改。默认方法解决了这个问题，它可以为接口添加新的方法，而不会破坏已有的接口的实现。这在 lambda 表达式作为 java 8 语言的重要特性而出现之际，为升级旧接口且保持向后兼容（backward compatibility）提供了途径。</p>
+</blockquote>
+<hr>
+<blockquote>
+<p>在Java Api中 很多的接口都会有其伴随类 这个伴随类实现了这个接口的部分或者全部方法 比如 Collection/AbstractCollection<br>在Java SE8中 可以直接在接口中实现方法 这个方式已经过时</p>
+</blockquote>
+<p>和其他方法一样 默认方法也可以被继承的</p>
+<p>如果在一个接口中将一个方法定义为默认方法 然后又在超类或另一个接口中定义同样Java 就会发生冲突<br>JAVA的相应规则就简单多了</p>
+<ul>
+<li>超类优先 如果超类提供一个具体方法 同名而且有相同参数类型的默认方法被忽略</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public interface Person &#123;</span><br><span class="line">       default String getName()&#123;</span><br><span class="line">   return &quot;person&quot;;</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public interface Person &#123;</span><br><span class="line">      default String getName()&#123;</span><br><span class="line">   return &quot;person&quot;;</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">public class PersonImpl implements Person &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class Student  extends PersonImpl implements Named&#123;</span><br><span class="line">    @Override</span><br><span class="line">public String getName() &#123;</span><br><span class="line">   return super.getName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>接口冲突 如果一个超接口提供了一个默认方法 另一个接口提供了一个同名而且参数类型（不论是否默认参数的相同方法） 必须覆盖这个方法来解决冲突</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public interface Named &#123;</span><br><span class="line"></span><br><span class="line">   default String getName()&#123;</span><br><span class="line">  return &quot;named&quot;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public interface Person &#123;</span><br><span class="line"></span><br><span class="line">   default String getName()&#123;</span><br><span class="line">   return &quot;person&quot;;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public class Student  implements  Person,Named&#123;</span><br><span class="line">@Override</span><br><span class="line">public String getName() &#123;</span><br><span class="line">    return null;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>类会继承Person和Named接口提供的俩个不一致的getName方法 并不是从中选择一个<br>Java编译器会报告一个错误 让程序员解决这个二义性<br>只需要在Student类中提供一个getName方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class Student  implements  Person,Named&#123;</span><br><span class="line">@Override</span><br><span class="line">public String getName() &#123;</span><br><span class="line">    return Person.super.getName();</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意 在默认方法冲突中 是<strong>类优先</strong>原则<br><strong>类优先</strong>原则可以确保与JAVA SE7的兼容性 如果为一个接口增加默认方法 这对于这个默认方法之前能正常工作的代码不会有任何影响</p>
+<h1 id="lambda表达式"><a href="#lambda表达式" class="headerlink" title="lambda表达式"></a>lambda表达式</h1><p>终于到关键部分了 lambda是一个希腊字母<br>（大写Λ，小写λ，中文音译：兰布达）</p>
+<blockquote>
+<p>为什么起这个名字 在以前没有计算机的时候 逻辑学家Alonzo Church想要形式化的表示能有效计算的数学函数 他使用了希腊字母lambda来标记参数</p>
+</blockquote>
+<p>lambda：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(参数)-&gt;表达式</span><br><span class="line">    或            </span><br><span class="line">(参数)-&gt;&#123;表达式&#125;</span><br></pre></td></tr></table></figure>
+<p>lambda表达式的形式：<br>参数 箭头(-&gt;)以及一个表达式 如果代码要完成的计算无法放在一个表达式中 就可以像写方法一样 把这些代码放在{}中 并包含显示的return语句<br>比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(String o1,String o2)-&gt;&#123;</span><br><span class="line">       if (o1.length()&lt;o2.length()) return -1;</span><br><span class="line">       else return 0;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>即使lambda表达式没有空参数 也要提供空括号 就像无参数方法一样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">()-&gt;&#123;system.out.println(&quot;test&quot;);&#125;</span><br></pre></td></tr></table></figure>
+<p>无需指定lamdab表达式的返回类型 lambda表达式的返回类型总是会有上下文推导得出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(String o1,String o2)-&gt;o1.length()-o2.length()</span><br></pre></td></tr></table></figure>
+<p>可以在需要int类型结构的上下文中使用</p>
+<p>可以省略参数类型声明</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(o1,o2)-&gt;o1.length()-o2.length();</span><br></pre></td></tr></table></figure>
+<p>下面是lambda的重要特征</p>
+<ul>
+<li>可选类型声明：不需要声明参数类型，编译器可以统一识别参数值。</li>
+<li>可选的参数圆括号：一个参数无需定义圆括号，但多个参数需要定义圆括号。</li>
+<li>可选的大括号：如果主体包含了一个语句，就不需要使用大括号。</li>
+<li>可选的返回关键字：如果主体只有一个表达式返回值则编译器会自动返回值，大括号需要指定明表达式返回了一个数值</li>
+</ul>
+<blockquote>
+<p>Lambda允许把函数作为一个方法的参数（函数作为参数传递进方法中），或者把代码看成数据</p>
+</blockquote>
+<p>在没有lambda的时候 一般都是采用匿名类来代替lambda<br>比如Thread类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/*Thread 匿名内部类*/</span><br><span class="line">    new Thread((new Runnable() &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public void run() &#123;</span><br><span class="line">            System.out.println(&quot;Thread 匿名内部类&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)).start();</span><br><span class="line"></span><br><span class="line">/*Thread的 lambda方式*/</span><br><span class="line">    new Thread(() -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;Thread lambda&quot;);</span><br><span class="line">    &#125;).start();</span><br><span class="line"></span><br><span class="line">//       单独赋予给Runnable</span><br><span class="line">    Runnable run =()-&gt;&#123;</span><br><span class="line">        System.out.println(&quot;就是有这种操作&quot;);</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>下面是对Thread类的模拟实践</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">@FunctionalInterface</span><br><span class="line">interface TestLambda  &#123;</span><br><span class="line"></span><br><span class="line">void test( String s) throws  Exception;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class  TestLambdaImpl implements TestLambda&#123;</span><br><span class="line">private   TestLambda testLambda;</span><br><span class="line"></span><br><span class="line">public TestLambdaImpl(TestLambda testLambda) &#123;</span><br><span class="line">    this.testLambda=testLambda;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Override</span><br><span class="line">public void test(String s) throws Exception &#123;</span><br><span class="line">    testLambda.test(s);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    //个人模仿Thread示例</span><br><span class="line">    TestLambdaImpl testLambda = new TestLambdaImpl((s) -&gt; System.out.println(s));</span><br><span class="line">    testLambda.test(&quot;测试&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于只有一个抽象方法的接口 需要这种接口的对象时 就可以提供一个lambda表达式 这种接口称为函数式接口 在本例中 我们将TestLambda接口声明@FunctionalInterface（这个在没有的情况也是可以的）</p>
+<hr>
+<p>下面是lambda表达式的其他示例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args)&#123;</span><br><span class="line">    //lambda示例</span><br><span class="line">    List&lt;String&gt; list = Arrays.asList(&quot;a&quot;, &quot;c&quot;, &quot;b&quot;);</span><br><span class="line"></span><br><span class="line">    Collections.sort(list,(s1,s2)-&gt;&#123;</span><br><span class="line">        if (s1==null)</span><br><span class="line">            return -1;</span><br><span class="line">        if (s2==null)</span><br><span class="line">            return -1;</span><br><span class="line">        return s1.length()-s2.length();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    System.out.println(list); </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    //swing中的Timer类lambda</span><br><span class="line">    javax.swing.Timer T =new Timer(1000,event-&gt;&#123;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;) ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最好将lambda看成一个函数 而不是一个对象 这样方便理解<br>在java中 对lambda表达式所能做的也只是能转换为函数结构 在其他支持函数字面量的语言中 可以声明函数类型(String,String)-&gt;int 声明这些类型的变量 还可以使用变量保存函数表达式</p>
+<p>Java API中在java.util.funtion包中定义了很多通用的函数式接口</p>
+<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>方法引用有如下几种形式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Class::new  //初始化Class对象</span><br><span class="line">Class::static_method //调用Class中的静态方法 </span><br><span class="line">instance::method //调用实例的非静态方法</span><br><span class="line">Class:methond //调用Class中的非静态方法</span><br></pre></td></tr></table></figure>
+<p>在前面三种情况 方法引用等价于提供方法参数的lambda表达式<br>如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class::new  等价于()-&gt;new Class()</span><br></pre></td></tr></table></figure>
+<p>在使用构造引用时 选择哪个构造器是取决于上下文的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class::static_method 等价于(参数)-&gt;Class.static_method </span><br><span class="line">instance::method 等价于(参数)-&gt;instance.methond;</span><br></pre></td></tr></table></figure>
+<p>至于第4种情况 第一个参数会成为方法的目标<br>比如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String::compareToIgnoreCase</span><br></pre></td></tr></table></figure>
+<p>等同于</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(x,y)-&gt;x.compareToIgnoreCase(y)</span><br></pre></td></tr></table></figure>
+<p>也可以在方法引用中使用super,this参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">super::instanceMethod</span><br><span class="line">this::instanceMethod</span><br></pre></td></tr></table></figure>
+<p>变量作用域</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">   public static void repeatMessage(String text, int delay) &#123;</span><br><span class="line">    ActionListener listener = e -&gt; &#123;</span><br><span class="line">        System.out.println(text);</span><br><span class="line">        Toolkit.getDefaultToolkit().beep();</span><br><span class="line">    &#125;;</span><br><span class="line">    new Timer(delay, listener).start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个lambda表达式中变量text 注意这个比那里并不是在这个lambda表达式中定义的 实际上 这是repeatMessage方法的一个参数变量</p>
+<p>lambda表达式有3个部分</p>
+<ol>
+<li>一个代码块</li>
+<li>参数</li>
+<li>自由变量的值 这里值非参数而不在代码中定义的变量</li>
+</ol>
+<p>在这个例子中 这个lambda表达式有1个自由变量text 表示lambda表达式的数据结构必须存储自由变量的值 在这里就是字符串 我们说它被lambda表达式捕获了</p>
+<blockquote>
+<p>这其实就是闭包</p>
+</blockquote>
+<p>lambda表达式可以捕获外围作用域中变量的值 在Java中要确保所捕获的值是明确定义的 这里有一个重要的限制 在lambda表达式中 只能引用值而不会改变的变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">   public static void repeatMessage(String text, int delay) &#123;</span><br><span class="line">    for (int i = 0; i &lt;10 ; i++) &#123;</span><br><span class="line">        ActionListener listener = e -&gt; &#123;</span><br><span class="line">            System.out.println(i);</span><br><span class="line">            Toolkit.getDefaultToolkit().beep();</span><br><span class="line">        &#125;;</span><br><span class="line">        new Timer(delay, listener).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>lambda表达式中捕获的对象实际上是最终变量 实际上的最终变量是指 这个变量初始化之后就不会再为它赋新值 在这里 text总是只是同一个String对象 所以捕获这个变量是合法的 不过i的值会改变 因此不会捕获</p>
+<p>处理lambda表达式</p>
+<p>在Java.util.function中提供一了一系列的函数式接口<br>如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BooleanSupplier</span><br><span class="line">PSupplier</span><br><span class="line">PConsumer</span><br><span class="line">ObjPConsumer&lt;T&gt;</span><br><span class="line"> ....</span><br></pre></td></tr></table></figure>
+<p>这里就不说了 太多了</p>
+<h1 id="Streams-API"><a href="#Streams-API" class="headerlink" title="Streams API"></a>Streams API</h1><p>发现了一篇好的Streams API介绍博客</p>
+<p>珠玉在前 没有必要写了</p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-java8streamapi/" target="_blank" rel="noopener">Java 8 中的 Streams API 详解</a></p>
+<p><a href="http://oopjava.cn/tags/Java8小结/" target="_blank" rel="noopener"># Java8小结</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          
+            <a href="/tags/基础/" rel="tag"># 基础</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/24/JAVA核心技术第14章--线程章/" rel="next" title="JAVA核心技术第14章--线程章">
+                <i class="fa fa-chevron-left"></i> JAVA核心技术第14章--线程章
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/09/Java高并发程序设计读书笔记/" rel="prev" title="Java高并发程序设计读书笔记">
+                Java高并发程序设计读书笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="http://oopjava.cn/images/avatar.png" alt="三山">
+            
+              <p class="site-author-name" itemprop="name">三山</p>
+              <p class="site-description motion-element" itemprop="description">空山无明</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/SanShanYouJiu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#方法"><span class="nav-number">1.</span> <span class="nav-text">方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#接口与静态方法"><span class="nav-number">1.1.</span> <span class="nav-text">接口与静态方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#这里插点自己的一些想法"><span class="nav-number">1.2.</span> <span class="nav-text">这里插点自己的一些想法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接口与默认方法"><span class="nav-number">1.3.</span> <span class="nav-text">接口与默认方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#lambda表达式"><span class="nav-number">2.</span> <span class="nav-text">lambda表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方法引用"><span class="nav-number">2.0.1.</span> <span class="nav-text">方法引用</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#Streams-API"><span class="nav-number">3.</span> <span class="nav-text">Streams API</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">三山</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+ <div class="powered-by">  
+  </div>
+  <span>Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a></span>
+</div>
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </footer></div>
+    
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://sanshanyoujiu.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/07/23/JAVA8新特性总结/';
+          this.page.identifier = '2017/07/23/JAVA8新特性总结/';
+          this.page.title = 'JAVA8新特性总结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://sanshanyoujiu.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

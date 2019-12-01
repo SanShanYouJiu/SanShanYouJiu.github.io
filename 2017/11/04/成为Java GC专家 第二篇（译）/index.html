@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVA,基础,JVM&&GC,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="无良" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="成为Java GC专家 第二篇（译）如何监控Java垃圾回收（译） 原文how-to-monitor-java-garbage-collection  这是”成为Java GC专家”系列的第2篇，在第一篇文章中了解Java GC我们学习了各种GC算法，关于Gc如何工作，年轻代和老年代是什么，在新的JDK7中，你应该知道5种GC类型，和这些GC类型对应的性能影响">
+<meta name="keywords" content="JAVA,基础,JVM&amp;&amp;GC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="成为Java GC专家 第二篇（译）">
+<meta property="og:url" content="http://yoursite.com/2017/11/04/成为Java GC专家 第二篇（译）/index.html">
+<meta property="og:site_name" content="无良">
+<meta property="og:description" content="成为Java GC专家 第二篇（译）如何监控Java垃圾回收（译） 原文how-to-monitor-java-garbage-collection  这是”成为Java GC专家”系列的第2篇，在第一篇文章中了解Java GC我们学习了各种GC算法，关于Gc如何工作，年轻代和老年代是什么，在新的JDK7中，你应该知道5种GC类型，和这些GC类型对应的性能影响">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/%E7%9B%91%E6%8E%A7GC%20jstat.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/jvm&gc%20jstat-gc.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/jstat-gcutil.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/Verboscgc%20minor%20gc.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/verboscgc%20minor%20gc%20output.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/Verboscgc%20full%20gc%20%20.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1747/748/001/e387fd9fbccb654f3d8db696fb215403.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1747/748/001/28c621040950b1010adca98e19baad62.png">
+<meta property="og:image" content="https://www.cubrid.org/files/attach/images/1747/748/001/1b37381a6b243d19cc73843dd134b86e.png">
+<meta property="og:updated_time" content="2019-12-01T11:01:25.166Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="成为Java GC专家 第二篇（译）">
+<meta name="twitter:description" content="成为Java GC专家 第二篇（译）如何监控Java垃圾回收（译） 原文how-to-monitor-java-garbage-collection  这是”成为Java GC专家”系列的第2篇，在第一篇文章中了解Java GC我们学习了各种GC算法，关于Gc如何工作，年轻代和老年代是什么，在新的JDK7中，你应该知道5种GC类型，和这些GC类型对应的性能影响">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/%E7%9B%91%E6%8E%A7GC%20jstat.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/11/04/成为Java GC专家 第二篇（译）/">
+
+
+
+
+
+  <title>成为Java GC专家 第二篇（译） | 无良</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">无良</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/04/成为Java GC专家 第二篇（译）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="三山">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="http://oopjava.cn/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="无良">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">成为Java GC专家 第二篇（译）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-04T00:00:00+08:00">
+                2017-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/11/04/成为Java GC专家 第二篇（译）/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/11/04/成为Java GC专家 第二篇（译）/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="成为Java-GC专家-第二篇（译）"><a href="#成为Java-GC专家-第二篇（译）" class="headerlink" title="成为Java GC专家 第二篇（译）"></a>成为Java GC专家 第二篇（译）</h1><h1 id="如何监控Java垃圾回收（译）"><a href="#如何监控Java垃圾回收（译）" class="headerlink" title="如何监控Java垃圾回收（译）"></a>如何监控Java垃圾回收（译）</h1><blockquote>
+<p>原文<a href="https://www.cubrid.org/blog/how-to-monitor-java-garbage-collection" target="_blank" rel="noopener">how-to-monitor-java-garbage-collection</a></p>
+</blockquote>
+<p>这是”成为Java GC专家”系列的第2篇，<br>在第一篇文章中了解Java GC我们学习了各种GC算法，关于Gc如何工作，年轻代和老年代是什么，在新的JDK7中，你应该知道5种GC类型，和这些GC类型对应的性能影响<br><a id="more"></a><br>在本文中，我将<strong>解释JVM如何实时运行GC</strong></p>
+<h2 id="什么是GC监控"><a href="#什么是GC监控" class="headerlink" title="什么是GC监控"></a>什么是GC监控</h2><p><strong>垃圾回收监控</strong>是搞清楚JVM如何运行GC的过程，比如，我们可以发现：</p>
+<ol>
+<li>当一个年轻代的对象移动到老年代</li>
+<li>或者是‘stop-the-world’的事件发生以及它的时长</li>
+</ol>
+<p>GC监控jvm是否高效的在运行GC，和检测GC调优是否有必要 基于以上信息，我们可以修改应用程序或者修改GC方法（GC调优）</p>
+<h2 id="如何监控GC"><a href="#如何监控GC" class="headerlink" title="如何监控GC"></a>如何监控GC</h2><p>有不同的监听方法，但是唯一的区别就是如何显示GC操作信息，GC是由Jvm完成的，而GC监控工具是提取到了JVM提供的GC信息，所以无论你如何监控GC，都将获得相同的结果。因此 你不需要学会所有有关GC的方法，但是需要一点点时间来学习不同监控GC的方法 知道这些可以帮助你在不同的情况和环境中使用</p>
+<p>在以下列出的JVM选项都是不能普遍使用的 ，换言之就是不一样的产品是不能使用一样的选项的，无论HVM商是什么（HVM是什么？）<br>，这是因为没有一个公开的公共的GC标准，在本文例子中我们使用 HotSpot VM（Oracle的JVM），由于NHN中使用的是Oracle（Sun）JVM，应用这些工具中的JVM选项并不困难，我们将在这里解释这些内容</p>
+<p>首先，GC监控方法分为CUI和GUI俩种访问接口 ，一个比较典型的CUI GC监控名为“jstat”的单独CUI应用程序，或者在JVM运行时选择一个名为“verbosegc”</p>
+<p>GUI GC监控使用单独一个GUI的程序，最重要使用三个“jconsole”，“jvisualvm”，“Visual GC”</p>
+<p>让我们进一步了解每种方法</p>
+<h2 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h2><p><strong>jstat</strong>是一个HotSpot的监控工具，HotSpot的其他监控工具分别为<strong>jps</strong>和<strong>jstatd</strong>，有时 你需要所有三种工具监控Java程序</p>
+<p><strong>jstat</strong>不仅仅只提供GC信息，它还提供类加载器操作信息或即时编译器操作信息 在<strong>jstat</strong>提供的所有信息中，在本文中，我们将仅仅介绍其监视GC操作信息的功能</p>
+<p><strong>jstat</strong>在$JDK_HOME/bin ，如果Java和javac没有在命令行中包含单独目录的条件下运行 那么jstat也是一样的</p>
+<p>你可以尝试以下命令<br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/监控GC jstat.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/%E7%9B%91%E6%8E%A7GC%20jstat.png" alt="此处输入图片的描述"></a></p>
+<p>像在本例中，每个实际数据都在以下行进行输出</p>
+<blockquote>
+<p><strong>S0C S1C S0U S1U EC EU OC OU PC.</strong></p>
+</blockquote>
+<p><strong>vmid</strong>(虚拟机ID)，正如它的名字一样，这是一个虚拟机的ID，可以使用指定的vmid运行本地或者远程的java应用程序。这个vmid如果在本地机器上被称为<strong>lvmid（local vmid）</strong>,通常被称为PID，你可以使用<strong>ps</strong>命令来写PID或者使用windows任务管理，但是我们使用jps因为pid有时候会跟lvmid不匹配，jps代表java Ps,jps显示vmid和主要方法信息，就像ps显示PID和处理名称</p>
+<p>使用JPS来找出想要监控的java应用程序的vmid，然后在jstat中使用参数，如果你单独使用jps， 当一个设备运行几个WAS实例时，只有引导信息会显示。我们建议使用<code>ps -ef | grep java</code>命令以及<code>jps</code>命令</p>
+<p>Gc性能数据需要不断观察，因此当运行jstat时，需要尝试定期输出GC监控信息</p>
+<p>比如运行 <code>jstat –gc &lt;vmid&gt; 1000</code>(或者1s）将会每隔一秒显示GC监控数据在控制台上.<code>jstat –gc &lt;vmid&gt; 1000 10</code>将每隔一秒显示GC数据显示10次</p>
+<p>除了GC还有很多选项，其中GC的相关选项如下</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项名</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">gc</td>
+<td style="text-align:left">它显示当前每个堆区的当前大小，和当前使用量（Ede,survivor,old,等等)，总共GC执行速，以及GC操作的累计时间</td>
+</tr>
+<tr>
+<td style="text-align:left">gccapactiy</td>
+<td style="text-align:left">它显示每个堆区域的最小大小（ms）和最大大小（mx），当前大小和每个区域执行的GC数量。（不显示GC操作的当前使用情况和累积时间。）</td>
+</tr>
+<tr>
+<td style="text-align:left">gccause</td>
+<td style="text-align:left">最近一次GC统计和原因</td>
+</tr>
+<tr>
+<td style="text-align:left">gcnew</td>
+<td style="text-align:left">显示新区域的GC性能数据。</td>
+</tr>
+<tr>
+<td style="text-align:left">gcnewcapacity</td>
+<td style="text-align:left">显示新区域的大小的统计。</td>
+</tr>
+<tr>
+<td style="text-align:left">gcold</td>
+<td style="text-align:left">显示旧区域的GC性能数据</td>
+</tr>
+<tr>
+<td style="text-align:left">gcoldcapacity</td>
+<td style="text-align:left">显示旧区域的大小统计。</td>
+</tr>
+<tr>
+<td style="text-align:left">gcpermcapacity</td>
+<td style="text-align:left">显示永久区域的统计数据。</td>
+</tr>
+<tr>
+<td style="text-align:left">gcutil</td>
+<td style="text-align:left">以百分比显示每个堆区的用法。还显示GC执行的总数和GC操作的累积时间。</td>
+</tr>
+</tbody>
+</table>
+<p>只要看频率，你可能按照这个<strong>-gcutil</strong>(或者-<strong>gccause</strong>)，<strong>-gc</strong>和<strong>-gccapacity</strong>顺序使用</p>
+<ul>
+<li><strong>-gcutil</strong>用于检查堆区域的使用情况，GC执行的数量以及GC操作的总累计时间，</li>
+<li>而<strong>-gccapacity</strong>选项和其他选项用于检查分配的实际大小。<br>您可以使用<strong>-gc</strong>选项看到以下输出：<br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/jvm&amp;gc jstat-gc.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/jvm&amp;gc%20jstat-gc.png" alt="此处输入图片的描述"></a></li>
+</ul>
+<p>显示不同的jstat选项显示不同类型的列，这些选项在下面列出，每列信息将在你使用右边的jstat选项之后显示</p>
+<blockquote>
+<p>这里太多不想抄了 关心的同学可以百度到中文版本 <a href="http://blog.csdn.net/zhaozheng7758/article/details/8623549" target="_blank" rel="noopener">Jstat命令详情其1</a>,<br><a href="http://blog.csdn.net/maosijunzi/article/details/46049117" target="_blank" rel="noopener">Jstat命令详情其2</a></p>
+</blockquote>
+<p>jstat的优势是只要可以使用控制台，就随时监控远程或者本地的Java应用程序的GC操作数据。在这些项目，使用-gcutil时输出以下结果<br>在GC调优时，需要注意<strong>YGC,YGCT,FGCT</strong>,和<strong>GCT</strong><br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/jstat-gcutil.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/jstat-gcutil.png" alt="此处输入图片的描述"></a><br>这些选项是十分重要的，因为这些选项显示了你运行GC上花费了多少时间</p>
+<p>在这个例子中 <strong>YGC</strong>是217，<strong>YGCT</strong>是0.928 算出算术平均值后，你可以看到每个年轻GC需要约4ms 像这种情况的 full gc的时间是33ms</p>
+<p>但是计算平均值常常无法帮助我们分析GC问题，这是因为GC运行时间的严重偏差造成的，（比如一种情况，总共的运行时间为0.067秒 但是其中一个是1ms，另外一个GC运行时间为57ms），如果你是为了检测单独的GC时间而不是平均值， 你就需要<strong>-verbosegc</strong></p>
+<h2 id="verbosegc"><a href="#verbosegc" class="headerlink" title="-verbosegc"></a>-verbosegc</h2><p><strong>-verbosegc</strong>是运行java应用程序的一个jvm选项，虽然不需要任何特别选项jstat就能监听jvm应用程序，而-verbosegc需要在开启时指定， 因此可以将其视为不必要的选项（因为可以使用jstat）</p>
+<p>但是，在当gc发生时 使用-verbosegc易于理解的输出，会对粗略的GC信息检测非常有帮助</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">–</th>
+<th style="text-align:left">jstat</th>
+<th style="text-align:left">-verbosegc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">监测对象</td>
+<td style="text-align:left">在可以登录终端的计算机上运行Java应用程序，或者使用jstatd可以连接到网络的远程Java应用程序</td>
+<td style="text-align:left">只有当-verbogc被指定为JVM启动选项时</td>
+</tr>
+<tr>
+<td style="text-align:left">输出信息</td>
+<td style="text-align:left">堆状态（使用情况，最大大小，GC /时间等的次数）</td>
+<td style="text-align:left">GC之前/之后的ew和旧区域的大小以及GC操作时间</td>
+</tr>
+<tr>
+<td style="text-align:left">输出时间</td>
+<td style="text-align:left">每个指定的时间</td>
+<td style="text-align:left">每当GC发生</td>
+</tr>
+<tr>
+<td style="text-align:left">何时有用</td>
+<td style="text-align:left">试图观察堆区大小的变化</td>
+<td style="text-align:left">试图看到单个GC的效果</td>
+</tr>
+</tbody>
+</table>
+<p>以下是可以与-verbosegc一起使用的其他选项</p>
+<ul>
+<li>-XX:+PrintGCDetails</li>
+<li>-XX:+PrintGCTimeStamps</li>
+<li>-XX:+PrintHeapAtGC</li>
+<li>-XX:+PrintGCDateStamps (from JDK 6 update 4)</li>
+</ul>
+<p>如果只使用-verbosegc，则默认使用-XX:+PrintGCDetails.-verbosegc并不是只能使用一个选项 可以使用多个混用</p>
+<p>当你使用-verbosegc，当minor GC发生时你可以看到以下格式的输出信息<br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/Verboscgc minor gc.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/Verboscgc%20minor%20gc.png" alt="此处输入图片的描述"></a><br>Collector|用于Minor GC的Collector名<br>–|–<br>starting occupancy1|GC之前的年轻区域的大小<br>ending occupancy1|GC后的年轻区域的大小<br>pause time1|Java应用程序停止运行次要GC的时间<br>starting occupancy3|GC之前的堆区总大小<br>ending occupancy3 |GC后堆面积的总大小<br>pause time3|Java应用程序停止运行整个堆GC（包括主要GC）的时间</p>
+<p>这是一个-verbosegc关于minor Gc的输出信息<br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/verboscgc minor gc output.png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/verboscgc%20minor%20gc%20output.png" alt="此处输入图片的描述"></a></p>
+<p>这是Full GC发生后的输出结果示例。<br><a href="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM与GC相关/Verboscgc full gc  .png" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/SanShanYouJiu/ImageRepository/master/JVM%E4%B8%8EGC%E7%9B%B8%E5%85%B3/Verboscgc%20full%20gc%20%20.png" alt="此处输入图片的描述"></a></p>
+<p>如果是CMS collector ，那么也可以提供以下CMS信息</p>
+<p>由于每次GC事件发生时-verbosegc都会输出日志，很容易看到GC运行引起的堆使用率的变化。</p>
+<h2 id="Java-VisualVM-Visual-GC"><a href="#Java-VisualVM-Visual-GC" class="headerlink" title="(Java) VisualVM + Visual GC"></a>(Java) VisualVM + Visual GC</h2><p>Java Visual VM是由Oracle JDK提供的GUI分析/监视工具。<br><a href="https://www.cubrid.org/files/attach/images/1747/748/001/e387fd9fbccb654f3d8db696fb215403.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1747/748/001/e387fd9fbccb654f3d8db696fb215403.png" alt="此处输入图片的描述"></a><br>图1：VisualVM截图<br>你可以从网站上下载最新版，而不是用JDK自带的版本，为了方便起见，JDK自带的Visual vm被称为 Java VisualVM (jvisualvm)，而从网站上下载的版本被称为 Visual VM (visualvm). 俩者的功能并不完全相同，有一些细微的差别，就个人而言，我更喜欢Visual VM版本，可以从网站上下载。<br>在GC运行后，你可以从左侧的窗口选择你想监控的程序。你可以在那里找到“监控”标签。你可以从监控面板中获得关于GC的基本信息<br>虽然GC的基本状态可以从VisualVM中获得，但是你无法像<strong>jstat</strong>或者<strong>-verbosegc</strong>一样获得详细信息</p>
+<p>如果你想要jstat提供的详细信息，那么推荐你安装Visual GC的插件</p>
+<p>Visual GC可以通过工具菜单实时访问<br><a href="https://www.cubrid.org/files/attach/images/1747/748/001/28c621040950b1010adca98e19baad62.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1747/748/001/28c621040950b1010adca98e19baad62.png" alt="此处输入图片的描述"></a><br>图2：Viusal GC安装截图</p>
+<p>通过使用Visual GC，您可以更直观地查看运行<strong>jstatd</strong>所提供的信息。</p>
+<p><a href="https://www.cubrid.org/files/attach/images/1747/748/001/1b37381a6b243d19cc73843dd134b86e.png" target="_blank" rel="noopener"><img src="https://www.cubrid.org/files/attach/images/1747/748/001/1b37381a6b243d19cc73843dd134b86e.png" alt="此处输入图片的描述"></a><br>图3：Visual GC执行屏幕截图</p>
+<h2 id="HPJMeter"><a href="#HPJMeter" class="headerlink" title="HPJMeter"></a>HPJMeter</h2><p>HPJMeter便于分析<strong>-verbosegc</strong>的结果，如果Visual GC被认为是jstat的GUI，那么HPJMeter就是verbosgc的GUI，GC只是HPJMeter功能中的其中之一，HPJMeter是HP开发的性能监控工具。它可以在HP-UX以及Linux和MS Windows中使用。</p>
+<p>本来，分析<strong>-verbosegc</strong>日志图形化的是<strong>HPTUN</strong>,但是，在HPTun3.0时已经被集成到了HPJMeter中，你不需要单独下载</p>
+<p>执行应用程序时，<strong>-verbosegc</strong>输出结果将被输出到一个单独的文件。</p>
+<p>您可以使用HPJMeter打开输出的文件，通过直观的图形用户界面（GUI），可以更快，更轻松地进行GC性能数据分析。</p>
+<h2 id="下一篇文章是讲什么的？"><a href="#下一篇文章是讲什么的？" class="headerlink" title="下一篇文章是讲什么的？"></a>下一篇文章是讲什么的？</h2><p>在本文中 我重点讲了如何监控GC,为GC调优的准备，根据我的经验 ，我建议使用<strong>jstat</strong>来监视GC操作，如果你执行GC需要太多时间，那么请尝试使用<strong>-verbosegc</strong>选项来分析GC,一般的GC调优过程是在基于-verbosegc分析之后进行的</p>
+<p>在下一篇文章，我们将讲讲一些具体案例来看到调优GC的最佳选项</p>
+<p><a href="http://oopjava.cn/tags/JVM-GC/" target="_blank" rel="noopener"># JVM&amp;&amp;GC</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVA/" rel="tag"># JAVA</a>
+          
+            <a href="/tags/基础/" rel="tag"># 基础</a>
+          
+            <a href="/tags/JVM-GC/" rel="tag"># JVM&&GC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/31/成为Java GC专家 第一篇（译）/" rel="next" title="成为Java GC专家 第一篇（译）">
+                <i class="fa fa-chevron-left"></i> 成为Java GC专家 第一篇（译）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/03/重构 改善既有代码设计读书笔记/" rel="prev" title="重构 改善既有代码设计读书笔记">
+                重构 改善既有代码设计读书笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="http://oopjava.cn/images/avatar.png" alt="三山">
+            
+              <p class="site-author-name" itemprop="name">三山</p>
+              <p class="site-description motion-element" itemprop="description">空山无明</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/SanShanYouJiu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#成为Java-GC专家-第二篇（译）"><span class="nav-number">1.</span> <span class="nav-text">成为Java GC专家 第二篇（译）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何监控Java垃圾回收（译）"><span class="nav-number">2.</span> <span class="nav-text">如何监控Java垃圾回收（译）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是GC监控"><span class="nav-number">2.1.</span> <span class="nav-text">什么是GC监控</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何监控GC"><span class="nav-number">2.2.</span> <span class="nav-text">如何监控GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jstat"><span class="nav-number">2.3.</span> <span class="nav-text">jstat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#verbosegc"><span class="nav-number">2.4.</span> <span class="nav-text">-verbosegc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-VisualVM-Visual-GC"><span class="nav-number">2.5.</span> <span class="nav-text">(Java) VisualVM + Visual GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HPJMeter"><span class="nav-number">2.6.</span> <span class="nav-text">HPJMeter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#下一篇文章是讲什么的？"><span class="nav-number">2.7.</span> <span class="nav-text">下一篇文章是讲什么的？</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">三山</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+ <div class="powered-by">  
+  </div>
+  <span>Hosted by <a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a></span>
+</div>
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </footer></div>
+    
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://sanshanyoujiu.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/11/04/成为Java GC专家 第二篇（译）/';
+          this.page.identifier = '2017/11/04/成为Java GC专家 第二篇（译）/';
+          this.page.title = '成为Java GC专家 第二篇（译）';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://sanshanyoujiu.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
